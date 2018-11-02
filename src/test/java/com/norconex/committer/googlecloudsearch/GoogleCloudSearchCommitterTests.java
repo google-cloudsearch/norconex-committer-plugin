@@ -20,8 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -148,6 +150,34 @@ public class GoogleCloudSearchCommitterTests {
     assertEquals(GoogleCloudSearchCommitter.FIELD_CONTENT_TYPE, "document.contentType");
     assertEquals(GoogleCloudSearchCommitter.CONFIG_KEY_CONFIG_FILE, "configFilePath");
     assertEquals(GoogleCloudSearchCommitter.CONFIG_KEY_UPLOAD_FORMAT, "uploadFormat");
+  }
+
+  @Test
+  public void helper_smokeTest() throws IOException, GeneralSecurityException {
+    // TODO(jlacey): We might be able to build a convincing service account JSON stub
+    // in order to instantiate the production IndexingService, too, but stub it for now.
+    Helper helper = spy(new Helper());
+    doReturn(mockIndexingService).when(helper).createIndexingService();
+
+    assertEquals(System.currentTimeMillis(), helper.getCurrentTimeMillis(), 100.0);
+    subject = new GoogleCloudSearchCommitter(helper);
+    subject.commitBatch(Arrays.asList());
+  }
+
+  @Test
+  public void setTargetReferenceField_throwsException() {
+    subject.setTargetReferenceField(null);
+    subject.setTargetReferenceField("");
+    thrown.expect(UnsupportedOperationException.class);
+    subject.setTargetReferenceField("hello, world");
+  }
+
+  @Test
+  public void setTargetContentField_throwsException() {
+    subject.setTargetContentField(null);
+    subject.setTargetContentField("");
+    thrown.expect(UnsupportedOperationException.class);
+    subject.setTargetContentField("hello, world");
   }
 
   @Test
@@ -683,7 +713,7 @@ public class GoogleCloudSearchCommitterTests {
                 .setPropertyDefinitions(Arrays.asList(prop1))));
 
     java.util.Properties config = new java.util.Properties();
-    config.put(IndexingItemBuilder.OBJECT_TYPE, "schema1");
+    config.put(IndexingItemBuilder.OBJECT_TYPE_VALUE, "schema1");
     setupConfig.initConfig(config);
 
     when(mockIndexingService.getSchema()).thenReturn(schema);
