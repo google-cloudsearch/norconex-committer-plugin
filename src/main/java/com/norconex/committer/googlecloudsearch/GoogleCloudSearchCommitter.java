@@ -26,7 +26,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.io.ByteStreams;
 import com.google.enterprise.cloudsearch.sdk.config.Configuration;
 import com.google.enterprise.cloudsearch.sdk.indexing.Acl;
 import com.google.enterprise.cloudsearch.sdk.indexing.DefaultAcl;
@@ -54,7 +53,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -329,7 +327,7 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
     }
     return IndexingItemBuilder.fromConfiguration(url)
         .setItemType(ItemType.CONTENT_ITEM)
-        .setMimeType(contentType)
+        .setMimeType(FieldOrValue.withValue(contentType))
         .setSourceRepositoryUrl(FieldOrValue.withValue(url))
         .setValues(multimap)
         .setTitle(FieldOrValue.withField(ITEM_METADATA_TITLE_DEFAULT))
