@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:include schemaLocation="/com/norconex/committer/core/AbstractMappedCommitter.xsd"></xs:include>
+  <xs:element name="committer">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="AbstractMappedCommitter">
+          <xs:all>
+            <xs:element name="configFilePath" type="nonEmptyString"
+              minOccurs="1" maxOccurs="1" />
+            <xs:element name="uploadFormat" type="uploadFormatValue"
+              minOccurs="0" maxOccurs="1" />
+          </xs:all>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="nonEmptyString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="uploadFormatValue">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[Tt][Ee][Xx][Tt]" />
+      <xs:pattern value="[Rr][Aa][Ww]" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
