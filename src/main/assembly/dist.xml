@@ -66,7 +66,8 @@
   <dependencySets>
     <dependencySet>
       <excludes>
-        <exclude>com.google.enterprise.cloudsearch:google-cloudsearch*</exclude>
+        <exclude>com.google.enterprise.cloudsearch:google-cloudsearch-connector-sdk*</exclude>
+        <exclude>com.google.enterprise.cloudsearch:google-cloudsearch-indexing-connector-sdk*</exclude>
         <exclude>com.google.guava*</exclude>
       </excludes>
       <outputDirectory>lib</outputDirectory>
