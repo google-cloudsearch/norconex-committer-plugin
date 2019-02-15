@@ -15,7 +15,7 @@ This connector is an implementation of the [Norconex Committer API](https://www.
 
 2. Checkout the desired version of the connector and build the ZIP file:
    ```
-   git checkout tags/v1-0.0.3
+   git checkout tags/v1-0.0.4
    mvn package
    ```
    (To skip the tests when building the connector, use `mvn package -DskipTests`)
