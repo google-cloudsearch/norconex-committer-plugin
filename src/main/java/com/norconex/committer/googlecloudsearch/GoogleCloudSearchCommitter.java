@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -157,6 +159,7 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
   private UploadFormat uploadFormat = UploadFormat.RAW;
   private IndexingService indexingService;
   private DefaultAcl defaultAcl;
+  private AtomicInteger referenceCount = new AtomicInteger(0);
 
   public GoogleCloudSearchCommitter() {
     this(new Helper());
@@ -178,7 +181,9 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
   }
 
   private synchronized void init() {
-    if (indexingService != null) {
+    if (indexingService != null && indexingService.isRunning()) {
+      referenceCount.incrementAndGet();
+      LOG.info("Indexing Service reference count: " + referenceCount.get());
       return;
     }
     LOG.info("Starting up!");
@@ -192,12 +197,14 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
     }
     indexingService = createIndexingService();
     indexingService.startAsync().awaitRunning();
+    referenceCount.set(1);
     defaultAcl = helper.initDefaultAclFromConfig(indexingService);
     synchronized (this) {
       if (!StructuredData.isInitialized()) {
         StructuredData.initFromConfiguration(indexingService);
       }
     }
+    LOG.info("Indexing Service reference count: " + referenceCount.get());
   }
 
   private void updateUploadFormat(XMLConfiguration xml) {
@@ -218,6 +225,7 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
     } catch (GeneralSecurityException | IOException e) {
       throw new CommitterException("failed to create IndexingService", e);
     }
+    LOG.info("Created indexingService: " + referenceCount.get());
     return indexingService;
   }
 
@@ -346,15 +354,17 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
 
   private synchronized void close() {
     com.google.common.base.Stopwatch stopWatch = Stopwatch.createStarted();
-    try {
-      if (indexingService != null && indexingService.isRunning()) {
-        indexingService.stopAsync().awaitTerminated();
+    if (indexingService != null && indexingService.isRunning()) {
+      if (referenceCount.decrementAndGet() == 0) {
+        LOG.info("Stopping indexingService: " + referenceCount.get());
+        IndexingService temp = indexingService;
+        indexingService = null;
+        temp.stopAsync().awaitTerminated();
       }
-    } finally {
-      indexingService = null;
     }
     stopWatch.stop();
     LOG.info("Shutting down (took: " + stopWatch.elapsed(TimeUnit.MILLISECONDS) + "ms)!");
+    LOG.info("Indexing Service reference count: " + referenceCount.get());
   }
 
   /**
