@@ -236,8 +236,12 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
           throw new CommitterException(
               "Content type field ('" + FIELD_CONTENT_TYPE + "') is missing!");
         }
-        AbstractInputStreamContent contentStream = getInputStreamContent(add, contentType);
-        addItem(url, contentType, contentStream, add.getMetadata(), stopWatch);
+        try {
+          AbstractInputStreamContent contentStream = getInputStreamContent(add, contentType);
+          addItem(url, contentType, contentStream, add.getMetadata(), stopWatch);
+        } catch (CommitterException e) {
+          LOG.warn("Exception caught while indexing: " + url, e);
+        }
       } else if (op instanceof IDeleteOperation) {
         String url = ((IDeleteOperation) op).getReference();
         deleteItem(url, stopWatch);
