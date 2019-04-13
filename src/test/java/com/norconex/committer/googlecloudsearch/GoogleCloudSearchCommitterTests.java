@@ -526,7 +526,7 @@ public class GoogleCloudSearchCommitterTests {
   }
 
   @Test
-  public void indexingServiceInitializedOnlyOnce() {
+  public void indexingServiceInitializedForEachBatch() {
     setupConfig.initConfig(new java.util.Properties());
     when(mockConfig.getString(eq(GoogleCloudSearchCommitter.CONFIG_KEY_UPLOAD_FORMAT), any()))
         .thenReturn("Text");
@@ -539,7 +539,7 @@ public class GoogleCloudSearchCommitterTests {
     subject.commitBatch(
         Arrays.asList(deleteOperation(URL), addOperation(URL, MIME_TEXT, null, !CONTENT_ERROR)));
     subject.commitComplete();
-    verify(mockIndexingService, times(1)).startAsync();
+    verify(mockIndexingService, times(3)).startAsync();
   }
 
   @Test
