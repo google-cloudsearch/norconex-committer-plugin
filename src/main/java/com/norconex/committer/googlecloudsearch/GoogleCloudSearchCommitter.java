@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -157,6 +159,7 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
   private UploadFormat uploadFormat = UploadFormat.RAW;
   private IndexingService indexingService;
   private DefaultAcl defaultAcl;
+  private AtomicInteger referenceCount = new AtomicInteger(0);
 
   public GoogleCloudSearchCommitter() {
     this(new Helper());
@@ -178,7 +181,9 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
   }
 
   private synchronized void init() {
-    if (indexingService != null) {
+    if (indexingService != null && indexingService.isRunning()) {
+      referenceCount.incrementAndGet();
+      LOG.info("Indexing Service reference count: " + referenceCount.get());
       return;
     }
     LOG.info("Starting up!");
@@ -192,12 +197,14 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
     }
     indexingService = createIndexingService();
     indexingService.startAsync().awaitRunning();
+    referenceCount.set(1);
     defaultAcl = helper.initDefaultAclFromConfig(indexingService);
     synchronized (this) {
       if (!StructuredData.isInitialized()) {
         StructuredData.initFromConfiguration(indexingService);
       }
     }
+    LOG.info("Indexing Service reference count: " + referenceCount.get());
   }
 
   private void updateUploadFormat(XMLConfiguration xml) {
@@ -218,6 +225,7 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
     } catch (GeneralSecurityException | IOException e) {
       throw new CommitterException("failed to create IndexingService", e);
     }
+    LOG.info("Created indexingService: " + referenceCount.get());
     return indexingService;
   }
 
@@ -226,32 +234,35 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
     init();
     LOG.info(
         "Sending " + batch.size() + " documents to Google Cloud Search for addition/deletion.");
-    for (ICommitOperation op : batch) {
-      Stopwatch stopWatch = Stopwatch.createStarted();
-      if (op instanceof IAddOperation) {
-        IAddOperation add = (IAddOperation) op;
-        String url = add.getReference();
-        String contentType = add.getMetadata().getString(FIELD_CONTENT_TYPE);
-        if (Strings.isNullOrEmpty(contentType)) {
-          throw new CommitterException(
-              "Content type field ('" + FIELD_CONTENT_TYPE + "') is missing!");
+    try {
+      for (ICommitOperation op : batch) {
+        Stopwatch stopWatch = Stopwatch.createStarted();
+        if (op instanceof IAddOperation) {
+          IAddOperation add = (IAddOperation) op;
+          String url = add.getReference();
+          String contentType = add.getMetadata().getString(FIELD_CONTENT_TYPE);
+          if (Strings.isNullOrEmpty(contentType)) {
+            throw new CommitterException(
+                "Content type field ('" + FIELD_CONTENT_TYPE + "') is missing!");
+          }
+          AbstractInputStreamContent contentStream = getInputStreamContent(add, contentType);
+          addItem(url, contentType, contentStream, add.getMetadata(), stopWatch);
+        } else if (op instanceof IDeleteOperation) {
+          String url = ((IDeleteOperation) op).getReference();
+          deleteItem(url, stopWatch);
+        } else {
+          throw new CommitterException("Unsupported operation");
         }
-        AbstractInputStreamContent contentStream = getInputStreamContent(add, contentType);
-        addItem(url, contentType, contentStream, add.getMetadata(), stopWatch);
-      } else if (op instanceof IDeleteOperation) {
-        String url = ((IDeleteOperation) op).getReference();
-        deleteItem(url, stopWatch);
-      } else {
-        throw new CommitterException("Unsupported operation");
       }
+    } finally {
+      // Shutdown IndexingService, flush remaining batch queue
+      close();
     }
   }
 
   @Override
   protected void commitComplete() {
     super.commitComplete();
-    // Shutdown IndexingService, flush remaining batch queue
-    close();
   }
 
   private void addItem(String url, String contentType, AbstractInputStreamContent contentStream,
@@ -346,15 +357,18 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
 
   private synchronized void close() {
     com.google.common.base.Stopwatch stopWatch = Stopwatch.createStarted();
-    try {
-      if (indexingService != null && indexingService.isRunning()) {
-        indexingService.stopAsync().awaitTerminated();
+    if (indexingService != null && indexingService.isRunning()) {
+      LOG.info("Indexing Service release reference count: " + referenceCount.get());
+      if (referenceCount.decrementAndGet() == 0) {
+        LOG.info("Stopping indexingService: " + referenceCount.get());
+        IndexingService temp = indexingService;
+        indexingService = null;
+        temp.stopAsync().awaitTerminated();
       }
-    } finally {
-      indexingService = null;
     }
     stopWatch.stop();
     LOG.info("Shutting down (took: " + stopWatch.elapsed(TimeUnit.MILLISECONDS) + "ms)!");
+    LOG.info("Indexing Service reference count: " + referenceCount.get());
   }
 
   /**
