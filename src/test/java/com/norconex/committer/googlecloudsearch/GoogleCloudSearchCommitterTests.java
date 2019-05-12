@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.atLeastOnce;
 
 import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.util.DateTime;
@@ -116,7 +117,7 @@ public class GoogleCloudSearchCommitterTests {
 
   @Captor private ArgumentCaptor<AbstractInputStreamContent> itemContentCaptor;
   @Captor private ArgumentCaptor<Item> itemCaptor;
-  @Captor private ArgumentCaptor<LoggingEvent> captor;
+  @Captor private ArgumentCaptor<LoggingEvent> loggingCaptor;
 
   private GoogleCloudSearchCommitter subject;
 
@@ -269,8 +270,8 @@ public class GoogleCloudSearchCommitterTests {
     setupConfig.initConfig(new java.util.Properties());
     subject.loadFromXml(mockConfig);
     subject.commitBatch(Arrays.asList(addOperation(URL, MIME_PDF, "Inv@lid", !CONTENT_ERROR)));
-    verify(appender, times(8)).doAppend(captor.capture());
-    List<LoggingEvent> loggingEvents = captor.getAllValues();
+    verify(appender, atLeastOnce()).doAppend(loggingCaptor.capture());
+    List<LoggingEvent> loggingEvents = loggingCaptor.getAllValues();
     assertEquals("Exception caught while committing: " + URL, loggingEvents.get(4).getRenderedMessage());
     assertEquals(
       "Binary content field is missing or invalid. Please configure BinaryContentTagger"
@@ -284,8 +285,8 @@ public class GoogleCloudSearchCommitterTests {
     setupConfig.initConfig(new java.util.Properties());
     subject.loadFromXml(mockConfig);
     subject.commitBatch(Arrays.asList(addOperation(URL, MIME_PDF, null, !CONTENT_ERROR)));
-    verify(appender, times(8)).doAppend(captor.capture());
-    List<LoggingEvent> loggingEvents = captor.getAllValues();
+    verify(appender, atLeastOnce()).doAppend(loggingCaptor.capture());
+    List<LoggingEvent> loggingEvents = loggingCaptor.getAllValues();
     assertEquals("Exception caught while committing: " + URL, loggingEvents.get(4).getRenderedMessage());
     assertEquals(
       "Binary content field is missing or invalid. Please configure BinaryContentTagger"
@@ -323,8 +324,8 @@ public class GoogleCloudSearchCommitterTests {
         throw new IOException();
       }
     }));
-    verify(appender, times(8)).doAppend(captor.capture());
-    List<LoggingEvent> loggingEvents = captor.getAllValues();
+    verify(appender, atLeastOnce()).doAppend(loggingCaptor.capture());
+    List<LoggingEvent> loggingEvents = loggingCaptor.getAllValues();
     assertEquals("Exception caught while committing: " + URL, loggingEvents.get(4).getRenderedMessage());
     assertEquals(
       "Text content ('content') field is missing, please enable the index-basic plugin!", loggingEvents.get(5).getRenderedMessage());
@@ -365,8 +366,8 @@ public class GoogleCloudSearchCommitterTests {
     setupConfig.initConfig(new java.util.Properties());
     subject.loadFromXml(mockConfig);
     subject.commitBatch(Arrays.asList(addOperation(URL, MIME_PDF, null, !CONTENT_ERROR)));
-    verify(appender, times(8)).doAppend(captor.capture());
-    List<LoggingEvent> loggingEvents = captor.getAllValues();
+    verify(appender, times(8)).doAppend(loggingCaptor.capture());
+    List<LoggingEvent> loggingEvents = loggingCaptor.getAllValues();
     assertEquals("Exception caught while committing: " + URL, loggingEvents.get(4).getRenderedMessage());
     assertEquals(
       "Binary content field is missing or invalid. Please configure BinaryContentTagger"
