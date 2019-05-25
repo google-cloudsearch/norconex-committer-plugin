@@ -16,6 +16,8 @@
 
 package com.norconex.committer.googlecloudsearch;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.InputStreamContent;
@@ -340,7 +342,7 @@ public class GoogleCloudSearchCommitter extends AbstractMappedCommitter {
       throw new CommitterException("Delete operation failed: passed url is null or empty!");
     }
     try {
-      indexingService.deleteItem(url, Long.toString(helper.getCurrentTimeMillis()).getBytes(),
+      indexingService.deleteItem(url, Long.toString(helper.getCurrentTimeMillis()).getBytes(UTF_8),
           RequestMode.ASYNCHRONOUS);
       LOG.info("Document deleted (" + stopWatch.elapsed(TimeUnit.MILLISECONDS) + "ms): " + url);
     } catch (IOException e) {

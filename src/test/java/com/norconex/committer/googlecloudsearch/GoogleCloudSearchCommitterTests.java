@@ -16,8 +16,11 @@
 
 package com.norconex.committer.googlecloudsearch;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -65,7 +68,6 @@ import com.norconex.commons.lang.map.Properties;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Arrays;
@@ -423,10 +425,9 @@ public class GoogleCloudSearchCommitterTests {
             eq(ContentFormat.RAW),
             eq(RequestMode.ASYNCHRONOUS));
     assertEquals(itemContentCaptor.getValue().getType(), MIME_PDF);
-    assertTrue(
-    Arrays.equals(
-        ByteStreams.toByteArray(itemContentCaptor.getValue().getInputStream()),
-        emptyContent.getBytes()));
+    assertArrayEquals(
+        emptyContent.getBytes(UTF_8),
+        ByteStreams.toByteArray(itemContentCaptor.getValue().getInputStream()));
   }
 
   @Test
@@ -478,10 +479,9 @@ public class GoogleCloudSearchCommitterTests {
             eq(ContentFormat.RAW),
             eq(RequestMode.ASYNCHRONOUS));
     assertEquals(itemContentCaptor.getValue().getType(), MIME_PDF);
-    assertTrue(
-        Arrays.equals(
-            ByteStreams.toByteArray(itemContentCaptor.getValue().getInputStream()),
-            CONTENT.getBytes()));
+    assertArrayEquals(
+        CONTENT.getBytes(UTF_8),
+        ByteStreams.toByteArray(itemContentCaptor.getValue().getInputStream()));
   }
 
   @Test
@@ -497,10 +497,9 @@ public class GoogleCloudSearchCommitterTests {
             eq(ContentFormat.RAW),
             eq(RequestMode.ASYNCHRONOUS));
     assertEquals(itemContentCaptor.getValue().getType(), MIME_PDF);
-    assertTrue(
-        Arrays.equals(
-            ByteStreams.toByteArray(itemContentCaptor.getValue().getInputStream()),
-            CONTENT.getBytes()));
+    assertArrayEquals(
+        CONTENT.getBytes(UTF_8),
+        ByteStreams.toByteArray(itemContentCaptor.getValue().getInputStream()));
   }
 
   @Test
@@ -518,10 +517,9 @@ public class GoogleCloudSearchCommitterTests {
             eq(ContentFormat.TEXT),
             eq(RequestMode.ASYNCHRONOUS));
     assertEquals(itemContentCaptor.getValue().getType(), MIME_TEXT);
-    assertTrue(
-        Arrays.equals(
-            ByteStreams.toByteArray(itemContentCaptor.getValue().getInputStream()),
-            CONTENT.getBytes()));
+    assertArrayEquals(
+        CONTENT.getBytes(UTF_8),
+        ByteStreams.toByteArray(itemContentCaptor.getValue().getInputStream()));
   }
 
   @Test
@@ -549,8 +547,8 @@ public class GoogleCloudSearchCommitterTests {
         .thenThrow(new IOException());
     subject.loadFromXml(mockConfig);
     subject.commitBatch(Arrays.asList(deleteOperation(URL)));
-    verify(mockIndexingService, times(1)).deleteItem(URL, Long.toString(CURRENT_MILLIS).getBytes(),
-        RequestMode.ASYNCHRONOUS);
+    verify(mockIndexingService, times(1))
+        .deleteItem(URL, Long.toString(CURRENT_MILLIS).getBytes(UTF_8), RequestMode.ASYNCHRONOUS);
   }
 
   @Test
@@ -558,8 +556,8 @@ public class GoogleCloudSearchCommitterTests {
     setupConfig.initConfig(new java.util.Properties());
     subject.loadFromXml(mockConfig);
     subject.commitBatch(Arrays.asList(deleteOperation(URL)));
-    verify(mockIndexingService, times(1)).deleteItem(URL, Long.toString(CURRENT_MILLIS).getBytes(),
-        RequestMode.ASYNCHRONOUS);
+    verify(mockIndexingService, times(1))
+        .deleteItem(URL, Long.toString(CURRENT_MILLIS).getBytes(UTF_8), RequestMode.ASYNCHRONOUS);
   }
 
   @Test
@@ -630,8 +628,8 @@ public class GoogleCloudSearchCommitterTests {
     subject.loadFromXml(mockConfig);
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     subject.saveToXML(new XmlStreamWriter(out));
-    assertTrue(out.toString().contains("<uploadFormat>raw</uploadFormat>"));
-    assertTrue(out.toString().contains("<configFilePath>/path/to/config</configFilePath>"));
+    assertThat(out.toString(), containsString("<uploadFormat>raw</uploadFormat>"));
+    assertThat(out.toString(), containsString("<configFilePath>/path/to/config</configFilePath>"));
   }
 
   @Test
@@ -678,7 +676,7 @@ public class GoogleCloudSearchCommitterTests {
 
       @Override
       public InputStream getContentStream() throws IOException {
-        return ByteSource.wrap(CONTENT.getBytes(StandardCharsets.UTF_8)).openStream();
+        return ByteSource.wrap(CONTENT.getBytes(UTF_8)).openStream();
       }
     }));
 
@@ -742,7 +740,7 @@ public class GoogleCloudSearchCommitterTests {
 
       @Override
       public InputStream getContentStream() throws IOException {
-        return ByteSource.wrap(CONTENT.getBytes(StandardCharsets.UTF_8)).openStream();
+        return ByteSource.wrap(CONTENT.getBytes(UTF_8)).openStream();
       }
     }));
 
@@ -802,7 +800,7 @@ public class GoogleCloudSearchCommitterTests {
 
       @Override
       public InputStream getContentStream() throws IOException {
-        return ByteSource.wrap(CONTENT.getBytes(StandardCharsets.UTF_8)).openStream();
+        return ByteSource.wrap(CONTENT.getBytes(UTF_8)).openStream();
       }
     }));
 
@@ -856,7 +854,7 @@ public class GoogleCloudSearchCommitterTests {
           when(contentStream.read(any())).thenThrow(new IOException());
           return contentStream;
         }
-        return ByteSource.wrap(CONTENT.getBytes(StandardCharsets.UTF_8)).openStream();
+        return ByteSource.wrap(CONTENT.getBytes(UTF_8)).openStream();
       }
     };
   }

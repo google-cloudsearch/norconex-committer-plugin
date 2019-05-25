@@ -76,4 +76,11 @@ public class BinaryContentTaggerTests {
     assertEquals(
         CONTENT_BASE64, metadata.getString(GoogleCloudSearchCommitter.FIELD_BINARY_CONTENT));
   }
+
+  @Test
+  public void tagDocument_empty_successful() throws Exception {
+    ImporterMetadata metadata = new ImporterMetadata();
+    subject.tagDocument(URL, new ByteArrayInputStream(new byte[0]), metadata, !PARSED);
+    assertEquals("", metadata.getString(GoogleCloudSearchCommitter.FIELD_BINARY_CONTENT));
+  }
 }
