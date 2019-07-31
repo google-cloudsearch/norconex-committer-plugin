@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.enterprise.cloudsearch</groupId>
   <artifactId>google-cloudsearch-norconex-committer-plugin</artifactId>
-  <version>v1-0.0.5</version>
+  <version>v1-0.0.6-SNAPSHOT</version>
   <name>Google Cloud Search Norconex HTTP Collector Indexer Plugin</name>
   <description>Google Cloud Search implementation of Norconex Committer API.</description>
 
@@ -353,7 +353,7 @@
     <dependency>
       <groupId>com.google.enterprise.cloudsearch</groupId>
       <artifactId>google-cloudsearch-indexing-connector-sdk</artifactId>
-      <version>v1-0.0.5</version>
+      <version>v1-0.0.6-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
