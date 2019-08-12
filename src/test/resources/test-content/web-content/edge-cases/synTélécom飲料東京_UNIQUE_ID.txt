@@ -1,0 +1,21 @@
+#japanese
+両足 =新しい車 
+新聞 >新年 
+会議=教会
+英会話>赤字
+#german
+Mönchengladbach=Limousinen könnte Feuer
+Österreich>Höhe von zehn Prozent verbucht
+#korean
+좋은정보=설치프로그램
+항목명>목적 및 용도
+#french
+Entrée=Droit d'entrée
+Bioénergie>réservation téléphone
+#simplified chinese
+玩具店=手机款型
+时装秀>百科全书
+#spanish
+España=Chávez denunció
+Unión>Nacional
+

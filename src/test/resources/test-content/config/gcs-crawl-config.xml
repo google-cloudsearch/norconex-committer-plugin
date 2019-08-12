@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<!-- 
+   Copyright 2010-2017 Norconex Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<httpcollector id="Minimum Config HTTP Collector">
+  <!-- Decide where to store generated files. -->
+  <progressDir>./output/progress</progressDir>
+  <logsDir>./output/logs</logsDir>
+
+  <crawlers>
+    <crawler id="Norconex Minimum Test Page">
+
+      <!-- Requires at least one start URL (or urlsFile). 
+           Optionally limit crawling to same protocol/domain/port as 
+           start URLs. -->
+      <startURLs stayOnDomain="true" stayOnPort="true" stayOnProtocol="true">
+        <url>http://HOST_PORT/edge-cases/deeply-nested/level2/level3/level4/level5/level6/test_UNIQUE_ID.txt</url>
+        <url>http://HOST_PORT/edge-cases/invalid_metadata_UNIQUE_ID.html</url>
+        <url>http://HOST_PORT/edge-cases/synTélécom飲料東京_UNIQUE_ID.txt</url>
+        <!--
+        <url>http://HOST_PORT/edge-cases/663043_UNIQUE_ID.pdf</url>
+        <url>http://HOST_PORT/edge-cases/empty_UNIQUE_ID.txt</url>
+        <url>http://HOST_PORT/edge-cases/pdf_UNIQUE_ID.jpg</url>
+        -->
+        <url>http://HOST_PORT/edge-cases/iso_8859_1_UNIQUE_ID.html</url>
+        <url>http://HOST_PORT/edge-cases/win1250_UNIQUE_ID.html</url>
+        <url>http://HOST_PORT/metadata/metadata_UNIQUE_ID.html</url>
+        <url>http://HOST_PORT/file-types/srvpres_UNIQUE_ID.wpd</url>
+        <!--
+        <url>http://HOST_PORT/file-types/GoogleJP_UNIQUE_ID.tar.gz</url>
+        -->
+        <url>http://HOST_PORT/file-types/replicas_UNIQUE_ID.ps</url>
+        <url>http://HOST_PORT/file-types/About Google - EN - October 2015 _UNIQUE_ID.jpg</url>
+        <url>http://HOST_PORT/file-types/Sample PPT online presentation_UNIQUE_ID.odp</url>
+        <url>http://HOST_PORT/file-types/autocad_UNIQUE_ID.dxf</url>
+        <url>http://HOST_PORT/file-types/About Google - EN - October 2015 - slide 1_UNIQUE_ID.png</url>
+        <url>http://HOST_PORT/file-types/pdf_only_images_UNIQUE_ID.pdf</url>
+        <url>http://HOST_PORT/file-types/test97_UNIQUE_ID.ppt</url>
+        <url>http://HOST_PORT/file-types/test97_UNIQUE_ID.xls</url>
+        <url>http://HOST_PORT/file-types/test-files_UNIQUE_ID.htm</url>
+        <!--
+        <url>http://HOST_PORT/file-types/55directories_UNIQUE_ID.zip</url>
+        -->
+        <url>http://HOST_PORT/file-types/Sample word online doc_UNIQUE_ID.pdf</url>
+        <url>http://HOST_PORT/file-types/Sample excel online book_UNIQUE_ID.ods</url>
+        <url>http://HOST_PORT/file-types/values_UNIQUE_ID.csv</url>
+        <url>http://HOST_PORT/file-types/plain_text_UNIQUE_ID.txt</url>
+        <url>http://HOST_PORT/file-types/About Google - EN - October 2015 _UNIQUE_ID.svg</url>
+        <url>http://HOST_PORT/file-types/testhx_UNIQUE_ID.doc</url>
+        <url>http://HOST_PORT/file-types/Sample word online doc_UNIQUE_ID.odt</url>
+        <url>http://HOST_PORT/file-types/tiff_UNIQUE_ID.tif</url>
+        <url>http://HOST_PORT/file-types/10453797_UNIQUE_ID.pdf</url>
+        <!--
+        <url>http://HOST_PORT/file-types/Sample word online doc_UNIQUE_ID.docx</url>
+        <url>http://HOST_PORT/file-types/Sample PPT online presentation_UNIQUE_ID.pptx</url>
+        <url>http://HOST_PORT/file-types/Sample excel online book_UNIQUE_ID.xlsx</url>
+        -->
+      </startURLs>
+
+      <!-- === Recommendations: ============================================ -->
+
+      <!-- Specify a crawler default directory where to generate files. -->
+      <workDir>./output</workDir>
+
+      <!-- Put a maximum depth to avoid infinite crawling (e.g. calendars). -->
+      <maxDepth>0</maxDepth>
+
+      <!-- We know we don't want to crawl the entire site, so ignore sitemap. -->
+      <sitemapResolverFactory ignore="true" />
+
+      <!-- Be as nice as you can to sites you crawl. -->
+      <delay default="250" />
+
+      <!-- Document importing -->
+      <committer class="com.norconex.committer.googlecloudsearch.GoogleCloudSearchCommitter">
+        <configFilePath>sdk-configuration.properties</configFilePath>
+        <!-- Optional, value="[raw|text]". Default value: raw -->
+        <uploadFormat>UPLOAD_FORMAT</uploadFormat>
+      </committer>
+      <importer>
+        <preParseHandlers>
+          <tagger class="com.norconex.committer.googlecloudsearch.BinaryContentTagger"/>
+        </preParseHandlers>
+      </importer>
+
+    </crawler>
+  </crawlers>
+
+</httpcollector>
